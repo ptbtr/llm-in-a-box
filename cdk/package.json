@@ -1,0 +1,15 @@
+{
+  "name": "llm-in-a-box",
+  "version": "0.0.1",
+  "description": "Serves large language models out of the box",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "aws-cdk": "^2.24.1",
+    "aws-cdk-local": "^2.15.0"
+  }
+}

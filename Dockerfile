@@ -23,6 +23,7 @@ COPY --from=base /venv /venv
 COPY server/ ./server
 
 ENV FLASK_APP=server
+
 # Set the Huggingface cache to a volume.
 ENV TRANSFORMERS_CACHE="/transformers-cache"
 ENTRYPOINT ["/venv/bin/python", "-m", "flask", "run", "--host=0.0.0.0", "--port=8000"]

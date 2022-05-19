@@ -5,7 +5,7 @@
 To run a local test server, do
 
 ```
-make run server
+make run-dev-server
 ```
 
 Once the server is up, you can submit a sample prompt by doing

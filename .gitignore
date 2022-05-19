@@ -130,7 +130,13 @@ dmypy.json
 
 # Node
 node_modules/
+*.d.ts
+*.js
 
 # Stuff
 .vscode/
 cdk.out/
+
+# fake make target files :(
+npm-install
+dev-server

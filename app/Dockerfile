@@ -1,4 +1,6 @@
-FROM python:3.9-bullseye AS base
+FROM python:3.9-bullseye as base
+
+RUN apt-get update && apt-get install dumb-init
 
 COPY requirements.txt .
 RUN python -m venv /venv && /venv/bin/python -m pip install -r requirements.txt
@@ -8,22 +10,19 @@ FROM python:3.9-bullseye AS dev
 
 WORKDIR /src
 COPY --from=base /venv /venv
+COPY --from=base /usr/bin/dumb-init /usr/bin/dumb-init
 
-ENV FLASK_APP=server
-ENV FLASK_ENV=development
-# Set the Huggingface cache to a volume.
 ENV TRANSFORMERS_CACHE="/transformers-cache"
-ENTRYPOINT ["/venv/bin/python", "-m", "flask", "run", "--host=0.0.0.0", "--port=8000"]
+ENTRYPOINT ["dumb-init"]
 
 ####################
 FROM python:3.9-bullseye as prod
 
 WORKDIR /src
 COPY --from=base /venv /venv
+COPY --from=base /usr/bin/dumb-init /usr/bin/dumb-init
 COPY server/ ./server
+COPY worker/ ./worker
 
-ENV FLASK_APP=server
-
-# Set the Huggingface cache to a volume.
 ENV TRANSFORMERS_CACHE="/transformers-cache"
-ENTRYPOINT ["/venv/bin/python", "-m", "flask", "run", "--host=0.0.0.0", "--port=8000"]
+ENTRYPOINT ["dumb-init"]

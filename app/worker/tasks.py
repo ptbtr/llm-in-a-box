@@ -1,6 +1,15 @@
+import logging
 import functools
 
+import celery
 from transformers import GPT2Tokenizer, OPTForCausalLM
+
+app = celery.Celery(
+    __name__,
+    broker="redis://redis:6379/0",
+    backend="redis://redis:6379/0",
+)
+log = logging.getLogger(__name__)
 
 
 class OptModel:
@@ -21,3 +30,11 @@ class OptModel:
 @functools.lru_cache(maxsize=1)
 def get_opt_model() -> OptModel:
     return OptModel()
+
+
+@app.task
+def generate(prompt: str) -> str:
+    log.info("Getting the model")
+    opt_model = get_opt_model()
+    log.info("Prompting the model")
+    return opt_model.generate(prompt)

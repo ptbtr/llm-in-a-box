@@ -1,16 +1,8 @@
 PY_SRCS := $(wildcard app/server/*.py)
 CDK_SRCS := $(wildcard app/cdk/*.ts)
 
-dev-server: $(PY_SRCS) app/requirements.txt app/Dockerfile
-	docker build app/ --target=dev --tag llm-in-a-box:dev
-	touch $@
-
-run-dev-server: dev-server
-	@docker run --rm \
-		-p 8000:8000 \
-		--volume $(PWD)/app/server:/src/server:z \
-		--mount type=volume,source=transformers-cache,target=/transformers-cache \
-		llm-in-a-box:dev
+run-server:
+	@docker compose -f app/docker-compose.yml up
 
 npm-install: cdk/package.json cdk/package-lock.json
 	npm install --prefix cdk

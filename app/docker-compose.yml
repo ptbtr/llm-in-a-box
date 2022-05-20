@@ -1,0 +1,34 @@
+services:
+  server:
+    image: llm-in-a-box:dev
+    build:
+      context: .
+      target: dev
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/src:z
+    command:
+      - /venv/bin/uvicorn
+      - server.main:app
+      - --reload
+      - --host=0.0.0.0
+      - --port=8000
+  worker:
+    image: llm-in-a-box:dev
+    build:
+      context: .
+      target: dev
+    volumes:
+      - .:/src:z
+      - transformers-cache:/transformers-cache
+    command:
+      - /venv/bin/celery
+      - --app=worker.tasks:app
+      - worker
+      - --loglevel=INFO
+      - --concurrency=1
+  redis:
+    image: redis
+volumes:
+  transformers-cache: {}

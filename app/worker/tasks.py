@@ -1,6 +1,13 @@
+import logging
 import functools
 
+import celery
 from transformers import GPT2Tokenizer, OPTForCausalLM
+
+app = celery.Celery()
+app.config_from_object("worker.celeryconfig")
+
+log = logging.getLogger(__name__)
 
 
 class OptModel:
@@ -21,3 +28,18 @@ class OptModel:
 @functools.lru_cache(maxsize=1)
 def get_opt_model() -> OptModel:
     return OptModel()
+
+
+@celery.signals.worker_process_init.connect
+def configure_workers(**kwargs: object) -> None:
+    log.info("Preloading model into the worker process")
+    get_opt_model()
+    log.info("Model preloaded")
+
+
+@app.task
+def generate(prompt: str) -> str:
+    log.info("Getting the model")
+    opt_model = get_opt_model()
+    log.info("Prompting the model")
+    return opt_model.generate(prompt)

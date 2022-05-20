@@ -4,12 +4,9 @@ import functools
 import celery
 from transformers import GPT2Tokenizer, OPTForCausalLM
 
-app = celery.Celery(
-    __name__,
-    broker="redis://redis:6379/0",
-    backend="redis://redis:6379/0",
-)
-app.conf.worker_proc_alive_timeout = 60
+app = celery.Celery()
+app.config_from_object("worker.celeryconfig")
+
 log = logging.getLogger(__name__)
 
 

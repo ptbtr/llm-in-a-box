@@ -9,6 +9,7 @@ app = celery.Celery(
     broker="redis://redis:6379/0",
     backend="redis://redis:6379/0",
 )
+app.conf.worker_proc_alive_timeout = 60
 log = logging.getLogger(__name__)
 
 
@@ -30,6 +31,13 @@ class OptModel:
 @functools.lru_cache(maxsize=1)
 def get_opt_model() -> OptModel:
     return OptModel()
+
+
+@celery.signals.worker_process_init.connect
+def configure_workers(**kwargs: object) -> None:
+    log.info("Preloading model into the worker process")
+    get_opt_model()
+    log.info("Model preloaded")
 
 
 @app.task

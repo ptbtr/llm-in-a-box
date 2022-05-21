@@ -18,6 +18,11 @@ def configure_workers(**kwargs: object) -> None:
 
 
 @app.task
+def ready() -> None:
+    return
+
+
+@app.task
 def complete(prompt: str) -> str:
     log.info("Getting the model")
     opt_model = models.OptModel.from_settings()

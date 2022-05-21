@@ -1,4 +1,4 @@
-FROM python:3.9-bullseye as base
+FROM python:3.10-bullseye as base
 
 RUN apt-get update && apt-get install dumb-init
 
@@ -6,7 +6,7 @@ COPY requirements.txt .
 RUN python -m venv /venv && /venv/bin/python -m pip install -r requirements.txt
 
 ####################
-FROM python:3.9-bullseye AS dev
+FROM python:3.10-bullseye AS dev
 
 RUN useradd app
 USER app
@@ -19,7 +19,7 @@ ENV TRANSFORMERS_CACHE="/transformers-cache"
 ENTRYPOINT ["dumb-init"]
 
 ####################
-FROM python:3.9-bullseye as prod
+FROM python:3.10-bullseye as prod
 
 RUN useradd app
 USER app

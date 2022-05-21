@@ -24,8 +24,8 @@ def ready() -> None:
 
 
 @app.task
-def complete(prompt: str) -> str:
+def complete(prompt: str, max_tokens: int) -> str:
     log.info("Getting the model")
     opt_model = models.OptModel.from_settings()
     log.info("Prompting the model")
-    return opt_model.complete(prompt)
+    return opt_model.complete(prompt, max_tokens)

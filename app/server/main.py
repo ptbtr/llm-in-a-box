@@ -20,10 +20,11 @@ class GenerateResponse(TypedDict):
 async def generate(request: Request) -> GenerateResponse:
     request_json = await request.json()
     prompt = request_json["prompt"]
+    max_tokens = request_json.get("max_tokens", 16)
     text = await celery_adapter.apply_async(
         tasks.complete,
         poll_interval=0.5,
-        args=(prompt,),
+        args=(prompt, max_tokens),
     )
     return {"text": text}
 

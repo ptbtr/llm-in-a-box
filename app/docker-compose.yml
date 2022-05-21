@@ -34,5 +34,14 @@ services:
       - ENV=dev
   redis:
     image: redis
+  production-image:
+    # Define the production image here to keep build information in one place.
+    image: llm-in-a-box:prod
+    # Assign a separate profile so that it isn't brought up for local development.
+    profiles: ["production-image"]
+    build:
+      context: .
+      target: prod
+
 volumes:
   transformers-cache: {}

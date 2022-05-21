@@ -39,6 +39,7 @@ def configure_workers(**kwargs: object) -> None:
 
 @app.task
 def generate(prompt: str) -> str:
+
     log.info("Getting the model")
     opt_model = get_opt_model()
     log.info("Prompting the model")

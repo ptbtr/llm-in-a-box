@@ -28,7 +28,8 @@ async def generate(request: Request) -> GenerateResponse:
     return {"text": text}
 
 
-class LiveResponse(TypedDict): ...
+class LiveResponse(TypedDict):
+    ...
 
 
 @app.get("/live")
@@ -36,7 +37,8 @@ async def live() -> LiveResponse:
     return {}
 
 
-class ReadyResponse(TypedDict): ...
+class ReadyResponse(TypedDict):
+    ...
 
 
 @app.get("/ready")

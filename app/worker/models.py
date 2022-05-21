@@ -37,7 +37,6 @@ class OptModel:
         settings = config.get_settings()
         return cls(settings.opt_model_string)
 
-
     @staticmethod
     def settings_model_cached() -> None:
         opt_model_string = config.get_settings().opt_model_string

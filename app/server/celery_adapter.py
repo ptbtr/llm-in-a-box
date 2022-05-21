@@ -1,10 +1,11 @@
 import asyncio
-from typing import Any, Sequence, Mapping
+from typing import Any, Mapping, Sequence
 
 import celery
 
 
-class TaskFailed(Exception): ...
+class TaskFailed(Exception):
+    ...
 
 
 async def apply_async(

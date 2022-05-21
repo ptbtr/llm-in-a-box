@@ -11,7 +11,7 @@ FROM python:3.10-bullseye AS dev
 WORKDIR /src
 
 RUN useradd app
-RUN mkdir /transformers-cache &&  chown app:app /transformers-cache
+RUN mkdir /transformers-cache && chown app:app /transformers-cache
 USER app
 
 COPY --from=base --chown=app:app /venv /venv

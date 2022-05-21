@@ -15,26 +15,6 @@ from typing import Iterator
 HOST = "http://localhost:8000"
 
 
-@contextlib.contextmanager
-def docker_compose_up(compose_file: Path) -> Iterator[None]:
-    subprocess.check_call([
-        "docker",
-        "compose",
-        f"--file={compose_file}",
-        "up",
-        "--detach",
-    ])
-    try:
-        yield
-    finally:
-        subprocess.check_call([
-            "docker",
-            "compose",
-            f"--file={compose_file}",
-            "down",
-        ])
-
-
 def restart_worker(compose_file: Path) -> None:
     while True:
         time.sleep(random.randint(1, 30))
@@ -73,20 +53,19 @@ def ping_server(url: str) -> None:
 
 def main() -> None:
     compose_file = Path(__file__).resolve().parent.parent / "app" / "docker-compose.yml"
-    with docker_compose_up(compose_file):
-        for _ in range(10):
-            try:
-                urllib.request.urlopen(f"{HOST}/ready")
-            except RemoteDisconnected:
-                time.sleep(1)
-            else:
-                break
+    for _ in range(10):
+        try:
+            urllib.request.urlopen(f"{HOST}/ready")
+        except RemoteDisconnected:
+            time.sleep(1)
+        else:
+            break
 
-        restart_thread = threading.Thread(
-            target=restart_worker, args=(compose_file,), daemon=True,
-        )
-        restart_thread.start()
-        ping_server(f"{HOST}/completions")
+    restart_thread = threading.Thread(
+        target=restart_worker, args=(compose_file,), daemon=True,
+    )
+    restart_thread.start()
+    ping_server(f"{HOST}/completions")
 
 
 if __name__ == "__main__":

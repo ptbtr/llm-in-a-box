@@ -1,10 +1,10 @@
-PY_SRCS := $(wildcard app/server/*.py)
 CDK_SRCS := $(wildcard app/cdk/*.ts)
 
 run-server:
 	@docker compose -f app/docker-compose.yml up
 
-make run-server-chaotic:
+run-server-chaotic:
+	@docker compose -f app/docker-compose.yml up -d
 	@./bin/run-server-chaotic
 
 lint:

@@ -1,4 +1,4 @@
-CDK_SRCS := $(wildcard app/cdk/*.ts)
+CDK_SRCS := $(wildcard cdk/*.ts)
 
 run-server:
 	@docker compose -f app/docker-compose.yml up

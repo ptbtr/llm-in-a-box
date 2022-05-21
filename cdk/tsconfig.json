@@ -1,9 +1,10 @@
 {
   "compilerOptions": {
-    "target": "ES2018",
+    "target": "ES2022",
     "module": "commonjs",
+    "moduleResolution": "node",
     "lib": [
-      "es2018"
+      "es2022"
     ],
     "declaration": true,
     "strict": true,

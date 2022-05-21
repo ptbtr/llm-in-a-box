@@ -5,7 +5,6 @@ import { Stack, StackProps,
   aws_ecs_patterns as ecsPatterns,
 } from "aws-cdk-lib";
 import { Construct } from "constructs";
-import { DockerCompose } from "./docker-compose";
 
 export interface ClusterProps extends StackProps {
   useSpotInstances?: boolean;

@@ -1,18 +1,18 @@
 CDK_SRCS := $(wildcard cdk/*.ts)
 
 run-server:
-	@docker-compose -f app/docker-compose.yml up
+	@docker compose -f app/docker-compose.yml up
 
 run-server-chaotic:
-	@docker-compose -f app/docker-compose.yml up -d
+	@docker compose -f app/docker-compose.yml up -d
 	@./bin/run-server-chaotic
 
 lint:
-	@docker-compose -f app/docker-compose.yml up -d
+	@docker compose -f app/docker-compose.yml up -d
 	@echo "Running black..."
-	@docker-compose -f app/docker-compose.yml exec -- server /venv/bin/black .
+	@docker compose -f app/docker-compose.yml exec -- server /venv/bin/black .
 	@echo "Running isort..."
-	@docker-compose -f app/docker-compose.yml exec -- server /venv/bin/isort .
+	@docker compose -f app/docker-compose.yml exec -- server /venv/bin/isort .
 
 npm-install: cdk/package.json cdk/package-lock.json
 	npm install --prefix cdk

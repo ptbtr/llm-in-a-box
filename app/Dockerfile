@@ -29,6 +29,7 @@ COPY --from=base --chown=app:app /venv /venv
 COPY --from=base --chown=app:app /usr/bin/dumb-init /usr/bin/dumb-init
 COPY --chown=app:app server/ ./server
 COPY --chown=app:app worker/ ./worker
+COPY --chown=app:app settings/ ./settings
 
 ENV TRANSFORMERS_CACHE="/transformers-cache"
 ENTRYPOINT ["dumb-init"]

@@ -14,6 +14,8 @@ services:
       - --reload
       - --host=0.0.0.0
       - --port=8000
+    environment:
+      - ENV=dev
   worker:
     image: llm-in-a-box:dev
     build:
@@ -28,6 +30,8 @@ services:
       - worker
       - --loglevel=INFO
       - --concurrency=1
+    environment:
+      - ENV=dev
   redis:
     image: redis
 volumes:

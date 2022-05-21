@@ -38,7 +38,7 @@ class OptModel:
         return cls(settings.opt_model_string)
 
 
-    def generate(self, prompt: str) -> str:
+    def complete(self, prompt: str) -> str:
         inputs = self.tokenizer(prompt, return_tensors="pt")
         generate_ids = self.opt.generate(inputs.input_ids, max_length=30)
         return self.tokenizer.batch_decode(

@@ -50,7 +50,7 @@ export const dockerComposeBuild = async ({ dockerComposeFile, buildDir, imageNam
     await execa('docker-compose', [
         '-f', dockerComposeFile,
         'build',
-	'production-image',
+        'production-image',
     ]);
     console.log(`Exporting it to ${outFile}`);
     await execa('docker', [

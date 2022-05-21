@@ -2,10 +2,11 @@ import logging
 
 import celery
 
+from settings import config
 from worker import models
 
 app = celery.Celery()
-app.config_from_object("worker.celeryconfig")
+app.config_from_object(config.get_settings())
 
 log = logging.getLogger(__name__)
 

@@ -10,9 +10,11 @@ run-server-chaotic:
 lint:
 	@docker compose -f app/docker-compose.yml up -d
 	@echo "Running black..."
-	@docker compose -f app/docker-compose.yml exec -- server /venv/bin/black .
+	@docker compose -f app/docker-compose.yml exec -- server black .
 	@echo "Running isort..."
-	@docker compose -f app/docker-compose.yml exec -- server /venv/bin/isort .
+	@docker compose -f app/docker-compose.yml exec -- server isort .
+	@echo "Running mypy..."
+	@docker compose -f app/docker-compose.yml exec -- server mypy .
 
 npm-install: cdk/package.json cdk/package-lock.json
 	npm install --prefix cdk

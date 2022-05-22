@@ -37,17 +37,9 @@ class OptModel:
         settings = config.get_settings()
         return cls(settings.opt_model_string)
 
-    @staticmethod
-    def settings_model_cached() -> None:
-        opt_model_string = config.get_settings().opt_model_string
-        return (
-            opt_model_string in OptModel.tokenizer_cache
-            and opt_model_string in OptModel.opt_cache
-        )
-
     def complete(self, prompt: str, max_tokens: int) -> str:
         inputs = self.tokenizer(prompt, return_tensors="pt")
-        generate_ids = self.opt.generate(inputs.input_ids, max_tokens)
+        generate_ids = self.opt.generate(inputs.input_ids, max_tokens)  # type: ignore
         return self.tokenizer.batch_decode(
             generate_ids,
             skip_special_tokens=True,

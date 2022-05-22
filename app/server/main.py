@@ -13,7 +13,7 @@ log = logging.getLogger(__name__)
 
 
 class GenerateResponse(TypedDict):
-    generated: str
+    text: str
 
 
 @app.post("/completions")

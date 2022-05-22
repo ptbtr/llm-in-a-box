@@ -25,6 +25,7 @@ services:
     volumes:
       - .:/src:z
       - transformers-cache:/transformers-cache
+      - mypy-cache:/mypy-cache
     command:
       - /venv/bin/celery
       - --app=worker.tasks:app
@@ -54,3 +55,4 @@ services:
 
 volumes:
   transformers-cache: {}
+  mypy-cache: {}

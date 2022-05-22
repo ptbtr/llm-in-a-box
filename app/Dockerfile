@@ -17,7 +17,9 @@ RUN add-apt-repository contrib \
 	&& apt-get install -y cuda
 
 COPY requirements.txt .
-RUN python -m venv /venv && /venv/bin/python -m pip install -r requirements.txt
+RUN --mount=type=cache,mode=0777,target=/root/.cache \
+	python -m venv /venv \
+	&& /venv/bin/python -m pip install -r requirements.txt
 
 ####################
 FROM python:3.10-bullseye AS dev

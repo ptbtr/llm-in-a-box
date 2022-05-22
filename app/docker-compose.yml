@@ -34,6 +34,14 @@ services:
       - ENV=dev
   redis:
     image: redis
+  base-image:
+    # Building the base image is only useful for debugging.
+    image: llm-in-a-box:base
+    # Assign a separate profile so that it isn't brought up for local development.
+    profiles: ["base-image"]
+    build:
+      context: .
+      target: base
   production-image:
     # Define the production image here to keep build information in one place.
     image: llm-in-a-box:prod

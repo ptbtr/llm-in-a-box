@@ -2,7 +2,6 @@ import { Stack, StackProps,
   aws_eks as eks,
   aws_ec2 as ec2,
   aws_ecs as ecs,
-  aws_ecs_patterns as ecsPatterns,
 } from "aws-cdk-lib";
 import { Construct } from "constructs";
 
@@ -12,8 +11,8 @@ export interface ClusterProps extends StackProps {
 }
 
 export class ClusterStack extends Stack {
-  readonly cluster: ecs.Cluster;
   readonly vpc: ec2.Vpc;
+  readonly cluster: eks.Cluster;
 
   constructor(scope: Construct, id: string, props: ClusterProps) {
     super(scope, id, props);
@@ -23,43 +22,29 @@ export class ClusterStack extends Stack {
       natGateways: 0,
     });
 
-    this.cluster = new ecs.Cluster(this, "Cluster", {
+    this.cluster = new eks.Cluster(this, "Cluster", {
+      version: eks.KubernetesVersion.V1_21,
       vpc: this.vpc,
+      clusterName: "llm-in-a-box",
+      defaultCapacity: 0,
+    })
+    const instanceTypes = [
+      ec2.InstanceType.of(ec2.InstanceClass.T3, ec2.InstanceSize.MICRO),
+    ];
+    if (props.useSpotInstances) {
+      instanceTypes.push(
+        ec2.InstanceType.of(ec2.InstanceClass.T3, ec2.InstanceSize.SMALL),
+        ec2.InstanceType.of(ec2.InstanceClass.T3, ec2.InstanceSize.MEDIUM),
+      );
+    }
+
+    this.cluster.addNodegroupCapacity('custom-node-group', {
+      instanceTypes,
+      minSize: props.numWorkers,
+      maxSize: props.numWorkers,
+      amiType: eks.NodegroupAmiType.AL2_X86_64_GPU,
+      capacityType: (props.useSpotInstances) ? eks.CapacityType.SPOT : eks.CapacityType.ON_DEMAND,
     });
-
-    this.cluster.addCapacity("p2.xlarge-ASG", {
-      instanceType: ec2.InstanceType.of(ec2.InstanceClass.P2, ec2.InstanceSize.XLARGE),
-      machineImage: new ecs.BottleRocketImage(),
-      desiredCapacity: props.numWorkers || 1,
-      spotInstanceDraining: props.useSpotInstances,
-      spotPrice: props.useSpotInstances ? "8.0": undefined,
-    });
-  }
-}
-
-export interface QueueProcessingProps extends StackProps {
-  cluster: ClusterStack;
-  workerArgs?: string[];
-  containerTarball: string;
-}
-
-export class QueueProcessingStack extends Stack {
-  readonly service: ecsPatterns.QueueProcessingEc2Service;
-  constructor(scope: Construct, id: string, props: QueueProcessingProps) {
-    super(scope, id, props);
-
-    this.service = new ecsPatterns.QueueProcessingEc2Service(this, "QueueProcessingEc2Service", {
-      cluster: props.cluster.cluster,
-      memoryLimitMiB: 1024,
-      image: ecs.ContainerImage.fromTarball(props.containerTarball),
-      command: props.workerArgs,
-      enableLogging: false,
-      environment: {
-      },
-      gpuCount: 1,
-      maxScalingCapacity: 1,
-      containerName: 'gpu-worker',
-    });
-    // Next task definitions
+    
   }
 }

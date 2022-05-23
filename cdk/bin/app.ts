@@ -33,12 +33,6 @@ async function main(): Promise<cdk.App> {
     numWorkers: 1,
   });
 
-  const queueProcessingStack = new QueueProcessingStack(app, 'QueueProcessingStack', {
-    cluster: clusterStack,
-    workerArgs: dc.services['worker'].command || undefined,
-    containerTarball: imageTar,
-  });
-
   return app;
 }
 

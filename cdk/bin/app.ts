@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import 'source-map-support/register';
 import * as cdk from 'aws-cdk-lib';
-import { ClusterStack,  QueueProcessingStack} from '../lib/app-stack';
+import { ClusterStack } from '../lib/app-stack';
 import { dockerComposeBuild, loadDockerCompose } from "../lib/docker-compose";
 import * as t from 'io-ts';
 import { unwrapOrRaise } from '../lib/util';

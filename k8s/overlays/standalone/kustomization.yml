@@ -1,8 +1,0 @@
-namespace: llm-in-a-box
-
-resources:
-- namespace.yml
-- redis.yml
-- ../../base
-patchesStrategicMerge:
-- server.yml

@@ -40,7 +40,7 @@ if ! npx --prefix="${script_dir}/../cdk tool render prod "${script_dir}/../build
     exit 1
 fi
 
-if ! kubectl apply -k "${script_dir}/../k8s/overlays/standalone"; then
+if ! kubectl apply -f "${script_dir}/../build/prod-manifests.yaml"; then
     echo "Failed to create resources"
     exit 1
 fi

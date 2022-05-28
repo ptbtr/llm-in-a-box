@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker
+  labels:
+    app: worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: worker
+  template:
+    metadata:
+      labels:
+        app: worker
+    spec:
+      containers:
+      - name: worker
+        image: llm-in-a-box:prod
+        volumeMounts:
+          - name: transformers-cache
+            mountPath: /transformers-cache
+        command:
+          - celery
+          - --app=worker.tasks:app
+          - worker
+          - --loglevel=INFO
+          - --concurrency=1
+        env:
+          - name: ENV
+            value: prod
+      volumes:
+      - name: transformers-cache
+        emptyDir: {}

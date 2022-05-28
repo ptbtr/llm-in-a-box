@@ -1,0 +1,48 @@
+#!/bin/bash
+
+if ! which kind &> /dev/null; then
+    echo "You must have kind installed:"
+    echo
+    echo "https://kind.sigs.k8s.io"
+    echo
+    echo "for this script to work."
+    exit 1
+fi
+
+if kind get clusters | grep llm-in-a-box; then
+    echo "Cluster already exists; not creating"
+else
+    if ! kind create cluster --name=llm-in-a-box; then
+	echo "Failed to create kind cluster"
+	exit 1
+    fi
+fi
+
+script_dir=$(dirname "${0}")
+
+if ! docker-compose -f "${script_dir}/../app/docker-compose.yml" build production-image; then
+    echo "Failed to build prod image"
+    exit 1
+fi
+
+if ! kind load docker-image --name=llm-in-a-box llm-in-a-box:prod; then
+    echo "Failed to load image into the kind cluster"
+    exit 1
+fi
+
+if ! kubectl config use-context kind-llm-in-a-box; then
+    echo "Failed to switch to the kind cluster context"
+    exit 1
+fi
+
+if ! kubectl apply -k "${script_dir}/../k8s/overlays/standalone"; then
+    echo "Failed to create resources"
+    exit 1
+fi
+
+echo "Created local cluster and deployed the application!"
+echo "Run:"
+echo
+echo "kubectl -n llm-in-a-box port-forward svc/server http"
+echo
+echo "and then you can hit the application at localhost:8000"

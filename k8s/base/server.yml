@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: server
+  labels:
+    app: server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: server
+  template:
+    metadata:
+      labels:
+        app: server
+    spec:
+      containers:
+      - name: server
+        image: llm-in-a-box:prod
+        ports:
+        - containerPort: 8000
+        command:
+          - uvicorn
+          - server.main:app
+          - --host=0.0.0.0
+          - --port=8000
+        env:
+          - name: ENV
+            value: prod
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: server
+spec:
+  selector:
+    app: server
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8000

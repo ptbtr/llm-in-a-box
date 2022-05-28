@@ -14,6 +14,7 @@ export type ServiceDeployment = { service: Service; deployment: Deployment };
 type Env = "prod" | "dev";
 
 const LLMInABoxImage = "llm-in-a-box";
+const Namespace = "llm-in-a-box";
 
 /** Get the manifests as a javascript object */
 export const manifests = (environment: Env, numWorkers = 1): Manifests => {
@@ -28,7 +29,7 @@ export const manifests = (environment: Env, numWorkers = 1): Manifests => {
       apiVersion: "v1",
       kind: "Namespace",
       metadata: {
-        name: "llm-in-a-box",
+        name: Namespace,
       },
     },
     server: {
@@ -67,6 +68,7 @@ const serverService = (
     kind: "Service",
     metadata: {
       name: serverLabels.app,
+      namespace: Namespace,
     },
     spec: {
       selector: serverLabels,
@@ -92,6 +94,7 @@ const serverDeployment = (
     metadata: {
       name: serverLabels.app,
       labels: serverLabels,
+      namespace: Namespace,
     },
     spec: {
       replicas: 1,
@@ -139,6 +142,7 @@ const workerDeployment = (
     metadata: {
       name: appName,
       labels: workerLabels,
+      namespace: Namespace,
     },
     spec: {
       replicas: numWorkers,
@@ -194,6 +198,7 @@ const redisDeployment = (
     metadata: {
       name,
       labels: redisLabels,
+      namespace: Namespace,
     },
     spec: {
       replicas: 1,
@@ -232,6 +237,7 @@ const redisService = (
     kind: "Service",
     metadata: {
       name,
+      namespace: Namespace,
     },
     spec: {
       selector: redisLabels,

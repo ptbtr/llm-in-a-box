@@ -35,12 +35,12 @@ if ! kubectl config use-context kind-llm-in-a-box; then
     exit 1
 fi
 
-if ! npx --prefix="${script_dir}/../cdk" tool render prod "${script_dir}/../build/prod-manifests.yaml"; then
-    echo "Failed to render the prod deployment"
+if ! npx --prefix="${script_dir}/../cdk" tool render dev "${script_dir}/../build/dev-manifests.yaml"; then
+    echo "Failed to render the dev deployment"
     exit 1
 fi
 
-if ! kubectl apply -f "${script_dir}/../build/prod-manifests.yaml"; then
+if ! kubectl apply -f "${script_dir}/../build/dev-manifests.yaml"; then
     echo "Failed to create resources"
     exit 1
 fi

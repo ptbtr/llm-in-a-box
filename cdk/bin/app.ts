@@ -21,7 +21,7 @@ async function main(): Promise<cdk.App> {
     `image name not found in docker-compose.yml`
   ).split(":")[0];
   const tag = unwrapOrRaise(
-    t.string.decode(dc.services["worker"].build?.target),
+    t.string.decode(dc.services["production-image"].build?.target),
     "tag not found in docker-compose.yml"
   );
   const imageTar = await dockerComposeBuild({

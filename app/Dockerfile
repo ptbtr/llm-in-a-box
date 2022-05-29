@@ -6,6 +6,8 @@ RUN apt-get update && apt-get install -y \
 	dumb-init \
 	software-properties-common
 
+ENV DEBIAN_FRONTEND noninteractive
+
 # Install CUDA.
 #
 # https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#debian-installation

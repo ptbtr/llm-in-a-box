@@ -4,7 +4,7 @@
     "module": "commonjs",
     "moduleResolution": "node",
     "lib": [
-      "es2022"
+      "es2022",
     ],
     "declaration": true,
     "strict": true,
@@ -13,6 +13,7 @@
     "noImplicitThis": true,
     "alwaysStrict": true,
     "noUnusedLocals": false,
+    "esModuleInterop": true,
     "noUnusedParameters": false,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": false,
@@ -22,10 +23,16 @@
     "strictPropertyInitialization": false,
     "typeRoots": [
       "./node_modules/@types"
-    ]
+    ],
+    "types": [
+      "node"
+    ],
   },
   "exclude": [
     "node_modules",
     "cdk.out"
+  ],
+  "include": [
+    "cdk/**/*.ts"
   ]
 }

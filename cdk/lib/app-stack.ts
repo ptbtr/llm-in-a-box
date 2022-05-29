@@ -42,6 +42,9 @@ export class ClusterStack extends Stack {
       minSize: props.numWorkers,
       maxSize: props.numWorkers,
       amiType: eks.NodegroupAmiType.BOTTLEROCKET_X86_64,
+      subnets: this.vpc.selectSubnets({
+        subnetType: ec2.SubnetType.PUBLIC,
+      }),
       capacityType: props.useSpotInstances
         ? eks.CapacityType.SPOT
         : eks.CapacityType.ON_DEMAND,
@@ -49,17 +52,14 @@ export class ClusterStack extends Stack {
 
     this.manifests = manifests("prod", props.numWorkers);
 
-    this.cluster.addManifest("Namespace", this.manifests.namespace);
     this.cluster.addManifest(
-      "ServerDeployment",
-      this.manifests.server.deployment
+      "Manifests",
+      this.manifests.namespace,
+      this.manifests.server.deployment,
+      this.manifests.server.service,
+      this.manifests.worker,
+      this.manifests.redis.deployment,
+      this.manifests.redis.service
     );
-    this.cluster.addManifest("ServerService", this.manifests.server.service);
-    this.cluster.addManifest("WorkerDeployment", this.manifests.worker);
-    this.cluster.addManifest(
-      "RedisDeployment",
-      this.manifests.redis.deployment
-    );
-    this.cluster.addManifest("RedisService", this.manifests.redis.service);
   }
 }

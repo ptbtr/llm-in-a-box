@@ -15,21 +15,21 @@ const dockerComposeFile = path.resolve(appDir, "docker-compose.yml");
 async function main(): Promise<cdk.App> {
   const app = new cdk.App();
 
-  const dc = loadDockerCompose(dockerComposeFile);
-  const imageName = unwrapOrRaise(
-    t.string.decode(dc.services["production-image"].image),
-    `image name not found in docker-compose.yml`
-  ).split(":")[0];
-  const tag = unwrapOrRaise(
-    t.string.decode(dc.services["production-image"].build?.target),
-    "tag not found in docker-compose.yml"
-  );
-  const imageTar = await dockerComposeBuild({
-    dockerComposeFile,
-    buildDir,
-    imageName,
-    tag,
-  });
+  // const dc = loadDockerCompose(dockerComposeFile);
+  // const imageName = unwrapOrRaise(
+  //   t.string.decode(dc.services["production-image"].image),
+  //   `image name not found in docker-compose.yml`
+  // ).split(":")[0];
+  // const tag = unwrapOrRaise(
+  //   t.string.decode(dc.services["production-image"].build?.target),
+  //   "tag not found in docker-compose.yml"
+  // );
+  // const imageTar = await dockerComposeBuild({
+  //   dockerComposeFile,
+  //   buildDir,
+  //   imageName,
+  //   tag,
+  // });
 
   const clusterStack = new ClusterStack(app, "ClusterStack", {
     useSpotInstances: false,

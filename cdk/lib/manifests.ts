@@ -1,5 +1,5 @@
-import { Deployment } from "kubernetes-types/apps/v1";
-import { Namespace, Service } from "kubernetes-types/core/v1";
+import * as apps from "kubernetes-types/apps/v1";
+import * as core from "kubernetes-types/core/v1";
 import * as yaml from "yaml";
 
 export type Manifests = {
@@ -9,12 +9,20 @@ export type Manifests = {
   namespace: Namespace;
 };
 
+type Service = core.Service & { metadata: { labels: { app: string } } };
+type Deployment = apps.Deployment & {
+  metadata: {
+    labels: { app: string };
+  };
+};
+type Namespace = core.Namespace & { metadata: { name: string } };
+
 export type ServiceDeployment = { service: Service; deployment: Deployment };
 
 type Env = "prod" | "dev";
 
-const LLMInABoxImage = "llm-in-a-box";
-const Namespace = "llm-in-a-box";
+const LLM_IN_A_BOX_IMAGE = "llm-in-a-box";
+const LLM_NAMESPACE = "llm-in-a-box";
 
 /** Get the manifests as a javascript object */
 export const manifests = (environment: Env, numWorkers = 1): Manifests => {
@@ -29,7 +37,7 @@ export const manifests = (environment: Env, numWorkers = 1): Manifests => {
       apiVersion: "v1",
       kind: "Namespace",
       metadata: {
-        name: Namespace,
+        name: LLM_NAMESPACE,
       },
     },
     server: {
@@ -68,7 +76,8 @@ const serverService = (
     kind: "Service",
     metadata: {
       name: serverLabels.app,
-      namespace: Namespace,
+      namespace: LLM_NAMESPACE,
+      labels: serverLabels,
     },
     spec: {
       selector: serverLabels,
@@ -94,7 +103,7 @@ const serverDeployment = (
     metadata: {
       name: serverLabels.app,
       labels: serverLabels,
-      namespace: Namespace,
+      namespace: LLM_NAMESPACE,
     },
     spec: {
       replicas: 1,
@@ -109,12 +118,18 @@ const serverDeployment = (
           containers: [
             {
               name: serverLabels.app,
-              image: `${LLMInABoxImage}:${environment}`,
+              image: `${LLM_IN_A_BOX_IMAGE}:${environment}`,
               ports: [
                 {
                   containerPort: serverPort,
                 },
               ],
+              resources: {
+                requests: {
+                  cpu: "250m",
+                  memory: "500Mi",
+                },
+              },
               command: [
                 "uvicorn",
                 "server.main:app",
@@ -142,7 +157,7 @@ const workerDeployment = (
     metadata: {
       name: appName,
       labels: workerLabels,
-      namespace: Namespace,
+      namespace: LLM_NAMESPACE,
     },
     spec: {
       replicas: numWorkers,
@@ -154,10 +169,17 @@ const workerDeployment = (
           labels: workerLabels,
         },
         spec: {
+          tolerations: [
+            {
+              key: "llm-in-a-box/worker",
+              effect: "NoSchedule",
+              value: "true",
+            },
+          ],
           containers: [
             {
               name: appName,
-              image: `${LLMInABoxImage}:${environment}`,
+              image: `${LLM_IN_A_BOX_IMAGE}:${environment}`,
               volumeMounts: [
                 {
                   name: "transformers-cache",
@@ -198,7 +220,7 @@ const redisDeployment = (
     metadata: {
       name,
       labels: redisLabels,
-      namespace: Namespace,
+      namespace: LLM_NAMESPACE,
     },
     spec: {
       replicas: 1,
@@ -237,7 +259,8 @@ const redisService = (
     kind: "Service",
     metadata: {
       name,
-      namespace: Namespace,
+      namespace: LLM_NAMESPACE,
+      labels: redisLabels,
     },
     spec: {
       selector: redisLabels,

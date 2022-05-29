@@ -17,18 +17,17 @@ export class ClusterStack extends Stack {
 
     this.vpc = new ec2.Vpc(this, "VPC", {
       maxAzs: 2,
-      natGateways: 0,
+      natGateways: 1,
     });
 
     this.cluster = new eks.Cluster(this, "Cluster", {
       version: eks.KubernetesVersion.V1_21,
       vpc: this.vpc,
-      vpcSubnets: [{ subnetType: ec2.SubnetType.PUBLIC }],
       clusterName: "llm-in-a-box",
       defaultCapacity: 0,
     });
     const instanceTypes = [
-      ec2.InstanceType.of(ec2.InstanceClass.T3, ec2.InstanceSize.MICRO),
+      ec2.InstanceType.of(ec2.InstanceClass.T3, ec2.InstanceSize.SMALL),
     ];
     if (props.useSpotInstances) {
       instanceTypes.push(
@@ -37,20 +36,34 @@ export class ClusterStack extends Stack {
       );
     }
 
-    this.cluster.addNodegroupCapacity("custom-node-group", {
-      instanceTypes,
-      minSize: props.numWorkers,
-      maxSize: props.numWorkers,
-      amiType: eks.NodegroupAmiType.BOTTLEROCKET_X86_64,
-      subnets: this.vpc.selectSubnets({
-        subnetType: ec2.SubnetType.PUBLIC,
-      }),
-      capacityType: props.useSpotInstances
-        ? eks.CapacityType.SPOT
-        : eks.CapacityType.ON_DEMAND,
-    });
-
     this.manifests = manifests("prod", props.numWorkers);
+
+    // this.cluster.addNodegroupCapacity("worker-node-group", {
+    //   instanceTypes,
+    //   minSize: props.numWorkers,
+    //   maxSize: props.numWorkers,
+    //   amiType: eks.NodegroupAmiType.BOTTLEROCKET_X86_64,
+    //   taints: [
+    //     {
+    //       effect: eks.TaintEffect.NO_SCHEDULE,
+    //       key: "llm-in-a-box/worker",
+    //       value: "true",
+    //     },
+    //   ],
+    //   capacityType: props.useSpotInstances
+    //     ? eks.CapacityType.SPOT
+    //     : eks.CapacityType.ON_DEMAND,
+    // });
+
+    this.cluster.addFargateProfile("server-fargate-profile", {
+      fargateProfileName: "llm-server-profile",
+      selectors: [
+        {
+          namespace: this.manifests.namespace.metadata.name,
+          labels: this.manifests.server.deployment.metadata.labels,
+        },
+      ],
+    });
 
     this.cluster.addManifest(
       "Manifests",

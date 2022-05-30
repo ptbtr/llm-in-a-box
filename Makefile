@@ -7,6 +7,9 @@ run-server-chaotic:
 	@docker compose -f app/docker-compose.yml up -d
 	@./bin/run-server-chaotic
 
+run-server-k8s:
+	@./bin/run-server-k8s
+
 lint:
 	@docker compose -f app/docker-compose.yml up -d
 	@echo "Running black..."

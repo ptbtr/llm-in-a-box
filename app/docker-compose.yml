@@ -1,6 +1,6 @@
 services:
   server:
-    image: llm-in-a-box:dev
+    image: ptbtr/llm-in-a-box:dev
     build:
       context: .
       target: dev
@@ -18,7 +18,7 @@ services:
     environment:
       - ENV=dev
   worker:
-    image: llm-in-a-box:dev
+    image: ptbtr/llm-in-a-box:dev
     build:
       context: .
       target: dev
@@ -38,7 +38,7 @@ services:
     image: redis
   base-image:
     # Building the base image is only useful for debugging.
-    image: llm-in-a-box:base
+    image: ptbtr/llm-in-a-box:base
     # Assign a separate profile so that it isn't brought up for local development.
     profiles: ["base-image"]
     build:
@@ -46,7 +46,7 @@ services:
       target: base
   production-image:
     # Define the production image here to keep build information in one place.
-    image: llm-in-a-box:prod
+    image: ptbtr/llm-in-a-box:prod
     # Assign a separate profile so that it isn't brought up for local development.
     profiles: ["production-image"]
     build:

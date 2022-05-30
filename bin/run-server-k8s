@@ -18,14 +18,14 @@ else
     fi
 fi
 
-script_dir=$(dirname "${0}")
+repo_root="$(dirname "${0}")/.."
 
-if ! docker-compose -f "${script_dir}/../app/docker-compose.yml" build production-image; then
+if ! docker-compose -f "${repo_root}/app/docker-compose.yml" build production-image; then
     echo "Failed to build prod image"
     exit 1
 fi
 
-if ! kind load docker-image --name=llm-in-a-box llm-in-a-box:prod; then
+if ! kind load docker-image --name=llm-in-a-box ptbtr/llm-in-a-box:prod; then
     echo "Failed to load image into the kind cluster"
     exit 1
 fi
@@ -35,12 +35,16 @@ if ! kubectl config use-context kind-llm-in-a-box; then
     exit 1
 fi
 
-if ! npx --prefix="${script_dir}/../cdk" tool render dev "${script_dir}/../build/dev-manifests.yaml"; then
-    echo "Failed to render the dev deployment"
+if ! mkdir -p "${repo_root}/build" \
+	&& cd "${repo_root}/cdk" \
+	&& npm exec tsc \
+	&& npm exec tool render dev "${repo_root}/build/dev-manifests.yaml";
+then
+    echo "Failed to render the prod deployment"
     exit 1
 fi
 
-if ! kubectl apply -f "${script_dir}/../build/dev-manifests.yaml"; then
+if ! kubectl apply -f "${repo_root}/build/dev-manifests.yaml"; then
     echo "Failed to create resources"
     exit 1
 fi

@@ -4,7 +4,7 @@ import * as yaml from "yaml";
 
 export type Manifests = {
   server: ServiceDeployment;
-  worker: Deployment;
+  worker: StatefulSetDeployment;
   redis: ServiceDeployment;
   namespace: Namespace;
 };
@@ -15,9 +15,15 @@ type Deployment = apps.Deployment & {
     labels: { app: string };
   };
 };
+type StatefulSet = apps.StatefulSet & {
+  metadata: {
+    labels: { app: string };
+  };
+};
 type Namespace = core.Namespace & { metadata: { name: string } };
 
 export type ServiceDeployment = { service: Service; deployment: Deployment };
+export type StatefulSetDeployment = { service: Service; statefulset: StatefulSet };
 
 type Env = "prod" | "dev";
 
@@ -44,7 +50,10 @@ export const manifests = (environment: Env, numWorkers = 1): Manifests => {
       deployment: serverDeployment(serverLabels, serverPort, environment),
       service: serverService(serverLabels, serverPort, environment),
     },
-    worker: workerDeployment(workerLabels, environment, numWorkers),
+    worker: {
+      statefulset: workerStatefulSet(workerLabels, environment, numWorkers),
+      service: workerService(workerLabels, environment),
+    },
     redis: {
       deployment: redisDeployment(redisLabels, redisPort),
       service: redisService(redisLabels, redisPort),
@@ -58,7 +67,8 @@ export const renderManifests = (manifests: Manifests): string => {
     manifests.namespace,
     manifests.server.deployment,
     manifests.server.service,
-    manifests.worker,
+    manifests.worker.statefulset,
+    manifests.worker.service,
     manifests.redis.deployment,
     manifests.redis.service,
   ]
@@ -84,7 +94,7 @@ const serverService = (
       ports: [
         {
           name: "http",
-          port: environment === "prod" ? 80 : serverPort,
+          port: environment === "dev" ? 8000 : 80,
           targetPort: serverPort,
         },
       ],
@@ -118,7 +128,7 @@ const serverDeployment = (
           containers: [
             {
               name: serverLabels.app,
-              image: `${LLM_IN_A_BOX_IMAGE}:${environment}`,
+              image: `${LLM_IN_A_BOX_IMAGE}:prod`,
               ports: [
                 {
                   containerPort: serverPort,
@@ -145,21 +155,40 @@ const serverDeployment = (
   };
 };
 
-const workerDeployment = (
+const workerService = (
+  workerLabels: { app: string },
+  environment: Env,
+): Service => {
+  return {
+    apiVersion: "v1",
+    kind: "Service",
+    metadata: {
+      name: workerLabels.app,
+      namespace: LLM_NAMESPACE,
+      labels: workerLabels,
+    },
+    spec: {
+      clusterIP: "None",
+      selector: workerLabels,
+    },
+  };
+}
+
+const workerStatefulSet = (
   workerLabels: { app: string },
   environment: Env,
   numWorkers: number
-): Deployment => {
-  const appName = "worker";
+): StatefulSet => {
   return {
     apiVersion: "apps/v1",
-    kind: "Deployment",
+    kind: "StatefulSet",
     metadata: {
-      name: appName,
+      name: workerLabels.app,
       labels: workerLabels,
       namespace: LLM_NAMESPACE,
     },
     spec: {
+      serviceName: workerLabels.app,
       replicas: numWorkers,
       selector: {
         matchLabels: workerLabels,
@@ -178,8 +207,8 @@ const workerDeployment = (
           ],
           containers: [
             {
-              name: appName,
-              image: `${LLM_IN_A_BOX_IMAGE}:${environment}`,
+              name: workerLabels.app,
+              image: `${LLM_IN_A_BOX_IMAGE}:prod`,
               volumeMounts: [
                 {
                   name: "transformers-cache",
@@ -196,14 +225,17 @@ const workerDeployment = (
               env: [envVar("ENV", environment)],
             },
           ],
-          volumes: [
-            {
-              name: "transformers-cache",
-              emptyDir: {},
-            },
-          ],
         },
       },
+      volumeClaimTemplates: [
+	{
+	  metadata: {name: "transformers-cache"},
+	  spec: {
+	    accessModes: ["ReadWriteOnce"],
+	    resources: {requests: {storage: "5Gi"}},
+	  },
+	},
+      ],
     },
   };
 };

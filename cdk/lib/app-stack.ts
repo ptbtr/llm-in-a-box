@@ -38,7 +38,7 @@ export class ClusterStack extends Stack {
     this.manifests = manifests("prod", props.numWorkers);
 
     const workerToleration =
-      this.manifests.worker.spec?.template.spec?.tolerations?.[0];
+      this.manifests.worker.statefulset.spec?.template.spec?.tolerations?.[0];
 
     this.cluster.addNodegroupCapacity("worker-node-group", {
       instanceTypes,

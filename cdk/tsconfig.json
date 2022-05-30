@@ -33,6 +33,6 @@
     "cdk.out"
   ],
   "include": [
-    "cdk/**/*.ts"
+    "**/*.ts"
   ]
 }

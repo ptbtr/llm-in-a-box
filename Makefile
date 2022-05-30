@@ -20,7 +20,6 @@ npm-install: cdk/package.json cdk/package-lock.json
 	cd cdk && npm install
 	touch $@
 
-
 .PHONY: typecheck
 typecheck:
 	cd cdk && npm exec tsc --emitDeclarationOnly

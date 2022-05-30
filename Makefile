@@ -33,7 +33,4 @@ cdk-diff: $(CDK_SRCS) npm-install
 
 .PHONY: clean
 clean:
-	rm -rf app/server/__pycache__
-	rm -rf cdk/node_modules
-	rm -f npm-install dev-server
-	rm -rf k8s/dist/
+	git clean -xdf

@@ -21,7 +21,7 @@ export type ServiceDeployment = { service: Service; deployment: Deployment };
 
 type Env = "prod" | "dev";
 
-const LLM_IN_A_BOX_IMAGE = "llm-in-a-box";
+const LLM_IN_A_BOX_IMAGE = "ptbtr/llm-in-a-box";
 const LLM_NAMESPACE = "llm-in-a-box";
 
 /** Get the manifests as a javascript object */
@@ -172,7 +172,7 @@ const workerDeployment = (
           tolerations: [
             {
               key: "llm-in-a-box/worker",
-              effect: "NoSchedule",
+              effect: "PreferNoSchedule",
               value: "true",
             },
           ],
@@ -236,6 +236,12 @@ const redisDeployment = (
             {
               name,
               image: redisImage,
+              resources: {
+                requests: {
+                  cpu: "250m",
+                  memory: "500Mi",
+                },
+              },
               ports: [
                 {
                   containerPort: redisPort,

@@ -32,7 +32,7 @@ async function main(): Promise<cdk.App> {
   // });
 
   const clusterStack = new ClusterStack(app, "ClusterStack", {
-    useSpotInstances: false,
+    useSpotInstances: true,
     numWorkers: 1,
   });
 

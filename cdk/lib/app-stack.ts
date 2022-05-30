@@ -27,33 +27,35 @@ export class ClusterStack extends Stack {
       defaultCapacity: 0,
     });
     const instanceTypes = [
-      ec2.InstanceType.of(ec2.InstanceClass.T3, ec2.InstanceSize.SMALL),
+      ec2.InstanceType.of(ec2.InstanceClass.T3, ec2.InstanceSize.MEDIUM),
     ];
     if (props.useSpotInstances) {
       instanceTypes.push(
-        ec2.InstanceType.of(ec2.InstanceClass.T3, ec2.InstanceSize.SMALL),
         ec2.InstanceType.of(ec2.InstanceClass.T3, ec2.InstanceSize.MEDIUM)
       );
     }
 
     this.manifests = manifests("prod", props.numWorkers);
 
-    // this.cluster.addNodegroupCapacity("worker-node-group", {
-    //   instanceTypes,
-    //   minSize: props.numWorkers,
-    //   maxSize: props.numWorkers,
-    //   amiType: eks.NodegroupAmiType.BOTTLEROCKET_X86_64,
-    //   taints: [
-    //     {
-    //       effect: eks.TaintEffect.NO_SCHEDULE,
-    //       key: "llm-in-a-box/worker",
-    //       value: "true",
-    //     },
-    //   ],
-    //   capacityType: props.useSpotInstances
-    //     ? eks.CapacityType.SPOT
-    //     : eks.CapacityType.ON_DEMAND,
-    // });
+    const workerToleration =
+      this.manifests.worker.spec?.template.spec?.tolerations?.[0];
+
+    this.cluster.addNodegroupCapacity("worker-node-group", {
+      instanceTypes,
+      minSize: props.numWorkers,
+      maxSize: props.numWorkers,
+      amiType: eks.NodegroupAmiType.BOTTLEROCKET_X86_64,
+      taints: [
+        {
+          key: workerToleration?.key || "",
+          value: workerToleration?.value || "",
+          effect: eks.TaintEffect.PREFER_NO_SCHEDULE,
+        },
+      ],
+      capacityType: props.useSpotInstances
+        ? eks.CapacityType.SPOT
+        : eks.CapacityType.ON_DEMAND,
+    });
 
     this.cluster.addFargateProfile("server-fargate-profile", {
       fargateProfileName: "llm-server-profile",
@@ -61,6 +63,15 @@ export class ClusterStack extends Stack {
         {
           namespace: this.manifests.namespace.metadata.name,
           labels: this.manifests.server.deployment.metadata.labels,
+        },
+      ],
+    });
+    this.cluster.addFargateProfile("redis-fargate-profile", {
+      fargateProfileName: "llm-redis-profile",
+      selectors: [
+        {
+          namespace: this.manifests.namespace.metadata.name,
+          labels: this.manifests.redis.deployment.metadata.labels,
         },
       ],
     });

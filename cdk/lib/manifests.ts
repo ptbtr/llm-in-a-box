@@ -25,13 +25,11 @@ type Namespace = core.Namespace & { metadata: { name: string } };
 export type ServiceDeployment = { service: Service; deployment: Deployment };
 export type StatefulSetDeployment = { service: Service; statefulset: StatefulSet };
 
-type Env = "prod" | "dev";
-
 const LLM_IN_A_BOX_IMAGE = "ptbtr/llm-in-a-box";
 const LLM_NAMESPACE = "llm-in-a-box";
 
 /** Get the manifests as a javascript object */
-export const manifests = (environment: Env, numWorkers = 1): Manifests => {
+export const manifests = (numWorkers = 1): Manifests => {
   const serverLabels = { app: "server" };
   const serverPort = 8000;
   const workerLabels = { app: "worker" };
@@ -47,12 +45,12 @@ export const manifests = (environment: Env, numWorkers = 1): Manifests => {
       },
     },
     server: {
-      deployment: serverDeployment(serverLabels, serverPort, environment),
-      service: serverService(serverLabels, serverPort, environment),
+      deployment: serverDeployment(serverLabels, serverPort),
+      service: serverService(serverLabels, serverPort),
     },
     worker: {
-      statefulset: workerStatefulSet(workerLabels, environment, numWorkers),
-      service: workerService(workerLabels, environment),
+      statefulset: workerStatefulSet(workerLabels, numWorkers),
+      service: workerService(workerLabels),
     },
     redis: {
       deployment: redisDeployment(redisLabels, redisPort),
@@ -79,7 +77,6 @@ export const renderManifests = (manifests: Manifests): string => {
 const serverService = (
   serverLabels: { app: string },
   serverPort: number,
-  environment: Env
 ): Service => {
   return {
     apiVersion: "v1",
@@ -94,7 +91,7 @@ const serverService = (
       ports: [
         {
           name: "http",
-          port: environment === "dev" ? 8000 : 80,
+          port: 80,
           targetPort: serverPort,
         },
       ],
@@ -105,7 +102,6 @@ const serverService = (
 const serverDeployment = (
   serverLabels: { app: string },
   serverPort: number,
-  environment: Env
 ): Deployment => {
   return {
     apiVersion: "apps/v1",
@@ -146,7 +142,7 @@ const serverDeployment = (
                 "--host=0.0.0.0",
                 `--port=${serverPort}`,
               ],
-              env: [envVar("ENV", environment)],
+              env: [envVar("ENV", "prod")],
             },
           ],
         },
@@ -157,7 +153,6 @@ const serverDeployment = (
 
 const workerService = (
   workerLabels: { app: string },
-  environment: Env,
 ): Service => {
   return {
     apiVersion: "v1",
@@ -176,7 +171,6 @@ const workerService = (
 
 const workerStatefulSet = (
   workerLabels: { app: string },
-  environment: Env,
   numWorkers: number
 ): StatefulSet => {
   return {
@@ -222,7 +216,7 @@ const workerStatefulSet = (
                 "--loglevel=INFO",
                 "--concurrency=1",
               ],
-              env: [envVar("ENV", environment)],
+              env: [envVar("ENV", "prod")],
             },
           ],
         },

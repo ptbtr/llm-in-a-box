@@ -38,13 +38,13 @@ fi
 if ! mkdir -p "${repo_root}/build" \
 	&& cd "${repo_root}/cdk" \
 	&& npm exec tsc \
-	&& npm exec tool render dev "${repo_root}/build/dev-manifests.yaml";
+	&& npm exec tool render "${repo_root}/build/manifests.yaml";
 then
     echo "Failed to render the prod deployment"
     exit 1
 fi
 
-if ! kubectl apply -f "${repo_root}/build/dev-manifests.yaml"; then
+if ! kubectl apply -f "${repo_root}/build/manifests.yaml"; then
     echo "Failed to create resources"
     exit 1
 fi
@@ -52,6 +52,6 @@ fi
 echo "Created local cluster and deployed the application!"
 echo "Run:"
 echo
-echo "kubectl -n llm-in-a-box port-forward svc/server http"
+echo "kubectl -n llm-in-a-box port-forward svc/server 8000:http"
 echo
 echo "and then you can hit the application at localhost:8000"

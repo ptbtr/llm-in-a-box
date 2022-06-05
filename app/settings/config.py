@@ -40,6 +40,7 @@ class Settings(BaseSettings):
         "max_retries": 12,
         "interval_start": 10,
     }
+    use_gpu: bool = False
 
     class Config:
         env_file = Path(__file__).resolve().parent / f"{os.environ['ENV']}.env"

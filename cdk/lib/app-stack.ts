@@ -3,8 +3,9 @@ import { Construct } from "constructs";
 import { manifests, Manifests } from "./manifests";
 
 export interface ClusterProps extends StackProps {
-  useSpotInstances?: boolean;
-  numWorkers?: number;
+  useSpotInstances: boolean;
+  numWorkers: number;
+  useGpu: boolean;
 }
 
 export class ClusterStack extends Stack {
@@ -35,7 +36,7 @@ export class ClusterStack extends Stack {
       );
     }
 
-    this.manifests = manifests(props.numWorkers);
+    this.manifests = manifests(props.numWorkers, props.useGpu);
 
     const workerToleration =
       this.manifests.worker.statefulset.spec?.template.spec?.tolerations?.[0];
@@ -82,8 +83,8 @@ export class ClusterStack extends Stack {
       this.manifests.server.deployment,
       this.manifests.server.service,
       this.manifests.worker,
-      this.manifests.redis.deployment,
-      this.manifests.redis.service
+      // this.manifests.redis.deployment,
+      // this.manifests.redis.service
     );
   }
 }

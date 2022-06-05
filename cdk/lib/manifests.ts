@@ -9,27 +9,35 @@ export type Manifests = {
   namespace: Namespace;
 };
 
-type Service = core.Service & { metadata: { labels: { app: string } } };
+type Service = core.Service & { apiVersion: "v1"; metadata: { labels: { app: string } } };
 type Deployment = apps.Deployment & {
+  apiVersion: "apps/v1";
   metadata: {
     labels: { app: string };
   };
 };
 type StatefulSet = apps.StatefulSet & {
+  apiVersion: "apps/v1";
   metadata: {
     labels: { app: string };
   };
 };
-type Namespace = core.Namespace & { metadata: { name: string } };
+type Namespace = core.Namespace & { 
+  apiVersion: "v1";
+  metadata: { name: string }
+};
 
 export type ServiceDeployment = { service: Service; deployment: Deployment };
-export type StatefulSetDeployment = { service: Service; statefulset: StatefulSet };
+export type StatefulSetDeployment = {
+  service: Service;
+  statefulset: StatefulSet;
+};
 
 const LLM_IN_A_BOX_IMAGE = "ptbtr/llm-in-a-box";
 const LLM_NAMESPACE = "llm-in-a-box";
 
 /** Get the manifests as a javascript object */
-export const manifests = (numWorkers = 1): Manifests => {
+export const manifests = (numWorkers = 1, useGpu: boolean): Manifests => {
   const serverLabels = { app: "server" };
   const serverPort = 8000;
   const workerLabels = { app: "worker" };
@@ -49,7 +57,7 @@ export const manifests = (numWorkers = 1): Manifests => {
       service: serverService(serverLabels, serverPort),
     },
     worker: {
-      statefulset: workerStatefulSet(workerLabels, numWorkers),
+      statefulset: workerStatefulSet(workerLabels, numWorkers, useGpu),
       service: workerService(workerLabels),
     },
     redis: {
@@ -76,7 +84,7 @@ export const renderManifests = (manifests: Manifests): string => {
 
 const serverService = (
   serverLabels: { app: string },
-  serverPort: number,
+  serverPort: number
 ): Service => {
   return {
     apiVersion: "v1",
@@ -101,7 +109,7 @@ const serverService = (
 
 const serverDeployment = (
   serverLabels: { app: string },
-  serverPort: number,
+  serverPort: number
 ): Deployment => {
   return {
     apiVersion: "apps/v1",
@@ -132,7 +140,7 @@ const serverDeployment = (
               ],
               resources: {
                 requests: {
-                  cpu: "250m",
+                  cpu: "500m",
                   memory: "500Mi",
                 },
               },
@@ -151,9 +159,7 @@ const serverDeployment = (
   };
 };
 
-const workerService = (
-  workerLabels: { app: string },
-): Service => {
+const workerService = (workerLabels: { app: string }): Service => {
   return {
     apiVersion: "v1",
     kind: "Service",
@@ -167,11 +173,12 @@ const workerService = (
       selector: workerLabels,
     },
   };
-}
+};
 
 const workerStatefulSet = (
   workerLabels: { app: string },
-  numWorkers: number
+  numWorkers: number,
+  useGpu: boolean
 ): StatefulSet => {
   return {
     apiVersion: "apps/v1",
@@ -199,6 +206,12 @@ const workerStatefulSet = (
               value: "true",
             },
           ],
+          securityContext: {
+            runAsUser: 1000,
+            runAsGroup: 1000,
+            fsGroup: 1000,
+            fsGroupChangePolicy: "Always",
+          },
           containers: [
             {
               name: workerLabels.app,
@@ -216,19 +229,22 @@ const workerStatefulSet = (
                 "--loglevel=INFO",
                 "--concurrency=1",
               ],
-              env: [envVar("ENV", "prod")],
+              env: [
+                envVar("ENV", "prod"),
+                envVar("USE_GPU", `${useGpu}`),
+              ],
             },
           ],
         },
       },
       volumeClaimTemplates: [
-	{
-	  metadata: {name: "transformers-cache"},
-	  spec: {
-	    accessModes: ["ReadWriteOnce"],
-	    resources: {requests: {storage: "5Gi"}},
-	  },
-	},
+        {
+          metadata: { name: "transformers-cache" },
+          spec: {
+            accessModes: ["ReadWriteOnce"],
+            resources: { requests: { storage: "5Gi" } },
+          },
+        },
       ],
     },
   };

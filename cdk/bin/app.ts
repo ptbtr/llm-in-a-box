@@ -34,6 +34,7 @@ async function main(): Promise<cdk.App> {
   const clusterStack = new ClusterStack(app, "ClusterStack", {
     useSpotInstances: true,
     numWorkers: 1,
+    useGpu: false,
   });
 
   return app;

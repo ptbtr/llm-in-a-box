@@ -37,7 +37,6 @@ fi
 
 if ! mkdir -p "${repo_root}/build" \
 	&& cd "${repo_root}/cdk" \
-	&& npm exec tsc \
 	&& npm exec tool render "${repo_root}/build/manifests.yaml";
 then
     echo "Failed to render the prod deployment"

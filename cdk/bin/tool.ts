@@ -22,16 +22,23 @@ const main = async () => {
           default: 1,
           description: "The number of workers to use",
           type: "number",
+        })
+        .option("useGpu", {
+          alias: "g",
+          default: false,
+          description: "Use GPU instances",
+          type: "boolean",
         }),
-    async (args) => manifestCommand(args.PATH, args.numWorkers)
+    async (args) => manifestCommand(args.PATH, args.numWorkers, args.useGpu)
   ).argv;
 };
 
 const manifestCommand = (
   outputPath: string,
-  numWorkers: number
+  numWorkers: number,
+  useGpu: boolean
 ) => {
-  const output = renderManifests(manifests(numWorkers));
+  const output = renderManifests(manifests(numWorkers, useGpu));
   fs.writeFileSync(outputPath, output);
 };
 

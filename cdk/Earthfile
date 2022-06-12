@@ -41,3 +41,11 @@ deploy:
             --rollback=$rollback ClusterStack \
             --outputs-file=./cdk-outputs.json
     SAVE ARTIFACT ./cdk-outputs.json cdk-outputs.json
+
+destroy:
+    FROM +synth
+    RUN --secret AWS_ACCESS_KEY_ID=+secrets/AWS_ACCESS_KEY_ID \
+        --secret AWS_SECRET_ACCESS_KEY=+secrets/AWS_SECRET_ACCESS_KEY \
+        --push \
+        npx cdk destroy --force \
+            ClusterStack

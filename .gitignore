@@ -135,6 +135,7 @@ node_modules/
 # Stuff
 .vscode/
 cdk.out/
+.env
 
 # fake make target files :(
 npm-install

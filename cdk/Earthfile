@@ -1,0 +1,43 @@
+VERSION 0.6
+FROM node:18-bullseye
+WORKDIR /app
+
+deps:
+    COPY package*.json .
+    RUN --mount=type=cache,target=$(echo $HOME)/.npm npm install
+    SAVE ARTIFACT package-lock.json AS LOCAL ./package-lock.json
+
+
+srcs:
+    FROM +deps
+    COPY bin bin
+    COPY lib lib
+bootstrap:
+    FROM +srcs
+    COPY cdk.json .
+    RUN --secret AWS_ACCESS_KEY_ID=+secrets/AWS_ACCESS_KEY_ID \
+        --secret AWS_SECRET_ACCESS_KEY=+secrets/AWS_SECRET_ACCESS_KEY \
+        npx cdk bootstrap
+
+synth:
+    FROM +bootstrap
+    RUN npx cdk synthesize ClusterStack
+
+
+diff:
+    FROM +synth
+    RUN --secret AWS_SECRET_ACCESS_KEY=+secrets/AWS_SECRET_ACCESS_KEY \
+      --secret AWS_ACCESS_KEY_ID=+secrets/AWS_ACCESS_KEY_ID \
+      --push \
+      npx cdk diff ClusterStack
+
+deploy:
+    FROM +synth
+    ARG rollback=true
+    RUN --secret AWS_ACCESS_KEY_ID=+secrets/AWS_ACCESS_KEY_ID \
+        --secret AWS_SECRET_ACCESS_KEY=+secrets/AWS_SECRET_ACCESS_KEY \
+        npx cdk deploy \
+            --require-approval=never \
+            --rollback=$rollback ClusterStack \
+            --outputs-file=./cdk-outputs.json
+    SAVE ARTIFACT ./cdk-outputs.json cdk-outputs.json

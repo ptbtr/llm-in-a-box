@@ -42,7 +42,7 @@ then
     echo "Failed to render the prod deployment"
     exit 1
 fi
-
+q
 if ! kubectl apply -f "${repo_root}/build/manifests.yaml"; then
     echo "Failed to create resources"
     exit 1

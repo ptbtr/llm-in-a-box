@@ -12,6 +12,7 @@ srcs:
     FROM +deps
     COPY bin bin
     COPY lib lib
+
 bootstrap:
     FROM +srcs
     COPY cdk.json .
@@ -37,6 +38,7 @@ deploy:
     RUN --secret AWS_ACCESS_KEY_ID=+secrets/AWS_ACCESS_KEY_ID \
         --secret AWS_SECRET_ACCESS_KEY=+secrets/AWS_SECRET_ACCESS_KEY \
         npx cdk deploy \
+            --push \
             --require-approval=never \
             --rollback=$rollback ClusterStack \
             --outputs-file=./cdk-outputs.json
@@ -49,3 +51,11 @@ destroy:
         --push \
         npx cdk destroy --force \
             ClusterStack
+
+manifests:
+    FROM +deps
+    ARG use_gpu=false
+    COPY bin/tool.ts bin/tool.ts
+    COPY lib/manifests.ts lib/manifests.ts
+    RUN npx tool render --use-gpu=$use_gpu ./manifests.yaml
+    SAVE ARTIFACT ./manifests.yaml manifests.yaml

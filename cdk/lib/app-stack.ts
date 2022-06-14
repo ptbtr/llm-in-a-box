@@ -76,15 +76,5 @@ export class ClusterStack extends Stack {
         },
       ],
     });
-
-    // this.cluster.addManifest(
-    //   "Manifests",
-    //   this.manifests.namespace,
-    //   this.manifests.server.deployment,
-    //   this.manifests.server.service,
-    //   this.manifests.worker,
-    //   // this.manifests.redis.deployment,
-    //   // this.manifests.redis.service
-    // );
   }
 }
